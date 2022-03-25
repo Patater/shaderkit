@@ -13,11 +13,15 @@
 
 enum
 {
-    SCREEN_WIDTH = 640,
-    SCREEN_HEIGHT = 480
+    INITIAL_WIDTH = 640,
+    INITIAL_HEIGHT = 480
 };
 
+static int screenWidth = 640;
+static int screenHeight = 480;
+
 static SDL_Window *window;
+static Uint32 windowID;
 static SDL_GLContext sdlGLContext;
 static int isRunning;
 
@@ -35,7 +39,7 @@ static GLuint pointVBO;
 static GLuint myVAO;
 
 static GLfloat resolution[] = {
-    SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2,
+    INITIAL_WIDTH, INITIAL_HEIGHT,
 };
 
 static GLfloat mouse[] = {
@@ -267,17 +271,42 @@ static int initGL(void)
     return 0;
 }
 
+static void resizeWindow(int newWidth, int newHeight)
+{
+    /* We ignore newWidth and newHeight from the event, as the sizes are
+     * unknown if high-dpi or not. The window has been resized already and we
+     * can query the drawable size, so we get the new size from the drawable
+     * query instead. */
+    (void)newWidth;
+    (void)newHeight;
+
+    SDL_GL_GetDrawableSize(window, &screenWidth, &screenHeight);
+
+    resolution[0] = screenWidth;
+    resolution[1] = screenHeight;
+}
+
 static int createWindow(const char *name)
 {
     window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED,
-                  SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,
+                  SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight,
                   SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
+                  SDL_WINDOW_RESIZABLE |
                   SDL_WINDOW_ALLOW_HIGHDPI);
     if (window == NULL)
     {
         fprintf(stderr, "SDL Error: %s\n", SDL_GetError());
         exit(1);
     }
+
+    windowID = SDL_GetWindowID(window);
+    if (windowID == 0)
+    {
+        fprintf(stderr, "SDL Error: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    resizeWindow(screenWidth, screenHeight);
 
     sdlGLContext = SDL_GL_CreateContext(window);
 
@@ -348,6 +377,22 @@ static void handleKey(SDL_KeyboardEvent k)
     }
 }
 
+static void handleWindow(struct SDL_WindowEvent *window)
+{
+    /* Is it for me? */
+    if (window->windowID != windowID)
+    {
+        return;
+    }
+
+    switch (window->event)
+    {
+    case SDL_WINDOWEVENT_SIZE_CHANGED:
+        resizeWindow(window->data1, window->data2);
+        break;
+    }
+}
+
 static void handleEvents(void)
 {
     SDL_Event e;
@@ -364,8 +409,8 @@ static void handleEvents(void)
         {
             SDL_MouseMotionEvent mm = e.motion;
 
-            mouse[0] = mm.x / (float)SCREEN_WIDTH;
-            mouse[1] = 1 - mm.y / (float)SCREEN_HEIGHT;
+            mouse[0] = mm.x / (float)screenWidth;
+            mouse[1] = 1 - mm.y / (float)screenHeight;
             break;
         }
         case SDL_KEYDOWN:
@@ -373,6 +418,8 @@ static void handleEvents(void)
             handleKey(e.key);
             break;
         case SDL_WINDOWEVENT:
+            handleWindow(&e.window);
+            break;
         case SDL_TEXTEDITING:
         case SDL_TEXTINPUT:
         case SDL_MOUSEBUTTONDOWN:
