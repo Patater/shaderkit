@@ -53,6 +53,8 @@ static GLfloat points[] = {
      1.0f,  1.0f
 };
 
+static const char *fragmentPath;
+
 static void printProgramInfoLog(GLuint program)
 {
     GLchar *log;
@@ -215,7 +217,7 @@ static int initGL(void)
     programID = glCreateProgram();
 
     loadShader(programID, GL_VERTEX_SHADER, "shaders/vertex.vert");
-    loadShader(programID, GL_FRAGMENT_SHADER, "fragment.frag");
+    loadShader(programID, GL_FRAGMENT_SHADER, fragmentPath);
 
     glLinkProgram(programID);
 
@@ -430,9 +432,19 @@ static void handleEvents(void)
     }
 }
 
-int main()
+int main(int argc, const char *argv[])
 {
     int ret;
+
+    if (argc < 2)
+    {
+        /* Using default */
+        fragmentPath = "shaders/fragment.frag";
+    }
+    else
+    {
+        fragmentPath = argv[1];
+    }
 
     ret = SDL_Init(SDL_INIT_VIDEO);
     if (ret < 0)
