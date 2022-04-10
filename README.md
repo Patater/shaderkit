@@ -5,6 +5,10 @@ two triangles (in one triangle strip), from which [you can render the
 world](https://www.iquilezles.org/www/material/nvscene2008/rwwtt.pdf) using a
 fragment shader.
 
+### Screenshots
+
+[![Wagglesamp Shader](images/waggleshade.png)](https://www.youtube.com/watch?v=DpCmwxbaB1A)
+
 ### Fragment Shader Context
 
 Each fragment shader run by the kit is provided a set of uniforms. This
