@@ -1,3 +1,7 @@
+include(../extern/guikit/cmake/Sanitizers.cmake)
+include(../extern/guikit/cmake/Coverage.cmake)
+include(../extern/guikit/cmake/Warnings.cmake)
+
 add_executable(shaderkit
     main.c
 )
@@ -15,3 +19,7 @@ target_link_libraries(shaderkit PUBLIC
 )
 
 target_compile_features(shaderkit PUBLIC c_std_90)
+
+enable_sanitizers(shaderkit)
+enable_coverage(shaderkit)
+enable_warnings(shaderkit)
