@@ -1,0 +1,3 @@
+[submodule "extern/guikit"]
+	path = extern/guikit
+	url = https://github.com/Patater/guikit.git
